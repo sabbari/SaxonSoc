@@ -1,4 +1,5 @@
 #!/bin/sh
+export SAXON_CPU_COUNT=2
 
 # Locations
 SAXON_SOURCED_SH=$(realpath ${BASH_SOURCE})
@@ -25,7 +26,7 @@ saxon_bitstream(){
 }
 
 saxon_serial(){
-  picocom -b 115200 /dev/ttyUSB1 --imap lfcrlf
+  sudo picocom -b 115200 /dev/ttyUSB1 --imap lfcrlf
 }
 
 saxon_ftp_load(){

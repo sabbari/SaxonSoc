@@ -1,6 +1,7 @@
 #ROOT shall point to location of build.sbt
 ROOT=../../../..
 SWBASE=$(ROOT)/software/standalone
+#SOCSW=memTest
 SOCSW=bootloader
 SOCMEMSRC=$(SWBASE)/$(SOCSW)/build/$(SOCSW).elf
 SOCMEM=build/soc.mem

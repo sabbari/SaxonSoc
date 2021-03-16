@@ -538,7 +538,7 @@ object ArtyA7SmpLinuxSystemSim {
 
         sdramA0.bmb.derivate(_.cmd.simPublic())
         ArtyA7SmpLinuxAbstract.default(this)
-        ramA.hexInit.load("software/standalone/bootloader/build/bootloader_spinal_sim.hex")
+        ramA.hexInit.load("software/standalone/bootloader/build/bootloader.hex")//_spinal_sim.hex")
       }
     }.setDefinitionName("miaou2")).doSimUntilVoid("test", 42){dut =>
       val debugClkPeriod = (1e12/dut.debugCd.inputClockDomain.frequency.getValue.toDouble).toLong
