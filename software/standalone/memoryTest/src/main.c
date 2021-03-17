@@ -2,10 +2,11 @@
 //#include "saxon.h"
 #include "gpio.h"
 #include "bsp.h"
-#include "csr_function.h"
+
+
 #include "print.h"
 
-
+#include "csr_function.h"
 
 extern volatile uint32_t start_of_ramtest[];
 extern  volatile uint32_t length_of_ramtest;
@@ -28,7 +29,7 @@ void main() {
     gpio_setOutput(BSP_LED_GPIO, 0x00000000);
 
 
-    print("Memory test\n");
+    println("Memory test\n");
 //setting led to red
     //gpio_setOutput(BSP_LED_GPIO,1<<23);
 
@@ -38,17 +39,17 @@ void main() {
 
 	     mem[i] = i;
    }
-  print("write successful \n");
+  println("write successful \n");
     for(int i=0;i<MAX_WORDS;i++) {
     //print("testing : ");
     //print_hex(i+mem,8);
     //print("\n");
      if (mem[i] != i) {
-			print("Failed at address 0x");
+			/*print("Failed at address 0x");
 			print_hex(i, 8);
 			print(" with value 0x");
 			print_hex(mem[i], 8);
-			print("\n");
+			print("\n");*/
 
 			while(1){}
       }
@@ -57,7 +58,7 @@ void main() {
 
     // Set the Green led for success
    // gpio_setOutput(BSP_LED_GPIO,1<<22);;
-    print("Success\n");
+    println("Success\n");
 
     while(1){}
 }

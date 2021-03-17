@@ -1,18 +1,20 @@
 
 #include "type.h"
-
+//#include "print.h"
 extern uint32_t read_mtval();
 extern uint32_t read_mepc();
 extern uint32_t read_mcause();
 extern uint32_t read_stackpointer();
 extern uint32_t read_threadpointer();
 extern uint32_t read_framepointer();
+//#define PRINT_PREFIX
 
+//#include "print.h"
 
 
 void print_mcause(uint32_t mcause) {
   print(" CSR : mcause value : 0x") ;
-  print_hex(mcause,8);
+  print_uint_as_hex(mcause,8);
   print(" Exception Description: ");
   if  (mcause == 0) {
     print("Instruction address misaligned \n");
@@ -90,16 +92,16 @@ void  my_function_handler(){
 	uint32_t threadpointer  =read_threadpointer();
 	uint32_t framepointer	=read_framepointer();
 	print_mcause(mcause);
-	print(" CSR: mpec: Virtual address of the instruction that was interrupted : 0x ");
-	print_hex(mepc,8);
-	print(" \n CSR: mtval: Virtual address of instruction or memory depending on the error : 0x ");
-	print_hex(mtval,8);
-	print("\n Stack pointer : 0x ");
-	print_hex(stackpointer,8);
-	print("\n Thread pointer : 0x ");
-	print_hex(threadpointer,8);
-	print("\n Frame pointer : 0x ");
-	print_hex(framepointer,8);
+	print(" CSR: mpec: Virtual address of the instruction that was interrupted : 0x");
+	print_uint_as_hex(mepc,8);
+	print(" \n CSR: mtval: Virtual address of instruction or memory depending on the error : 0x");
+	print_uint_as_hex(mtval,8);
+	print("\n Stack pointer  : 0x");
+	print_uint_as_hex(stackpointer,8);
+	print("\n Thread pointer : 0x");
+	print_uint_as_hex(threadpointer,8);
+	print("\n Frame pointer  : 0x");
+	print_uint_as_hex(framepointer,8);
 	print("   \n");
 
 	while(1);
