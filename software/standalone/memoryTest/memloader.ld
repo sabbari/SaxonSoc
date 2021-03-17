@@ -7,11 +7,11 @@ ENTRY( _start )
 
 MEMORY
 {
-  ram      (wxai!r) : ORIGIN = RAM_ORIGIN, LENGTH      = 4k
-  ramtest  (wxai!r) : ORIGIN = RAM_ORIGIN + 4k, LENGTH = 4k
+  ram      	(wxai!r) : ORIGIN = RAM_ORIGIN, 	LENGTH      = 4k
+  ramtest  	(wxai!r) : ORIGIN = RAM_ORIGIN + 4k, LENGTH = 4k
 }
 "start_of_ramtest" = ORIGIN(ramtest);
-
+"length_of_ramtest" = LENGTH(ramtest);
 PHDRS
 {
   ram PT_LOAD;
@@ -159,4 +159,5 @@ SECTIONS
     . = __stack_size;
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
+
 }

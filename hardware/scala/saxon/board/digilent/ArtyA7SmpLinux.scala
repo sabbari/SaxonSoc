@@ -323,8 +323,10 @@ object ArtyA7SmpLinuxAbstract{
     ))
 
     uartA.parameter load UartCtrlMemoryMappedConfig(
-      baudrate = 115200,
+      //baudrate = 115200,
+      baudrate    = 9600,
       txFifoDepth = 128,
+      //txFifoDepth = 512,
       rxFifoDepth = 128
     )
 
