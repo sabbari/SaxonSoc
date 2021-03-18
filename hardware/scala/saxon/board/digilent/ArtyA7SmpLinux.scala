@@ -57,9 +57,9 @@ class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cp
     val md = decoder.mdioMasterId(2) //Ethernet phy
   }
 
-  val mac = BmbMacEthGenerator(0x40000)
-  mac.connectInterrupt(plic, 3)
-  val eth = mac.withPhyMii()
+//  val mac = BmbMacEthGenerator(0x40000)
+//  mac.connectInterrupt(plic, 3)
+//  val eth = mac.withPhyMii()
 
   implicit val bsbInterconnect = BsbInterconnectGenerator()
 //  val dma = new DmaSgGenerator(0x80000){
@@ -170,9 +170,9 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
   debugCd.holdDuration.load(4095)
   debugCd.enablePowerOnReset()
 
-  val vgaCd = ClockDomainResetGenerator()
-  vgaCd.holdDuration.load(63)
-  vgaCd.asyncReset(debugCd)
+//  val vgaCd = ClockDomainResetGenerator()
+//  vgaCd.holdDuration.load(63)
+//  vgaCd.asyncReset(debugCd)
 
   val sdramCd = ClockDomainResetGenerator()
   sdramCd.holdDuration.load(63)
@@ -269,7 +269,7 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
         frequency = FixedFrequency(150 MHz)
       )
     )
-    vgaCd.setInput(ClockDomain(clk25))
+    //vgaCd.setInput(ClockDomain(clk25))
    // system.vga.vgaCd.load(vgaCd.outputClockDomain)
 
     sdramDomain.phyA.clk90.load(ClockDomain(pll.CLKOUT2))
@@ -351,17 +351,17 @@ object ArtyA7SmpLinuxAbstract{
       cmdFifoDepth = 256,
       rspFifoDepth = 256
     )
-
-    mac.parameter load MacEthParameter(
-      phy = PhyParameter(
-        txDataWidth = 4,
-        rxDataWidth = 4
-      ),
-      rxDataWidth = 32,
-      rxBufferByteSize = 8*1024,
-      txDataWidth = 32,
-      txBufferByteSize = 4*1024
-    )
+//
+//    mac.parameter load MacEthParameter(
+//      phy = PhyParameter(
+//        txDataWidth = 4,
+//        rxDataWidth = 4
+//      ),
+//      rxDataWidth = 32,
+//      rxBufferByteSize = 8*1024,
+//      txDataWidth = 32,
+//      txBufferByteSize = 4*1024
+//    )
 
 //    dma.parameter.layout load DmaMemoryLayout(
 //      bankCount     = 2,
