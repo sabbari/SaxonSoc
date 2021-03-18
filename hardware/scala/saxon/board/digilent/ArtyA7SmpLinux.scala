@@ -39,10 +39,10 @@ import vexriscv.plugin.{AesPlugin, FpuPlugin}
 // Define a SoC abstract enough to be used in simulation (no PLL, no PHY)
 class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cpuCount){
   val fabric = withDefaultFabric()
-
-  val sdramA_cd = Handle[ClockDomain]
-  val sdramA = sdramA_cd on SdramXdrBmbGenerator(memoryAddress = 0x80000000l)
-  val sdramA0 = sdramA.addPort()
+//
+//  val sdramA_cd = Handle[ClockDomain]
+//  val sdramA = sdramA_cd on SdramXdrBmbGenerator(memoryAddress = 0x80000000l)
+//  val sdramA0 = sdramA.addPort()
 
   val gpioA = BmbGpioGenerator(0x00000)
 
@@ -103,8 +103,8 @@ class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cp
   interconnect.addConnection(bmbPeripheral.bmb, ramA.ctrl)
 
   interconnect.addConnection(
-    fabric.iBus.bmb -> List(sdramA0.bmb, bmbPeripheral.bmb),
-    fabric.dBus.bmb -> List(sdramA0.bmb, bmbPeripheral.bmb)
+    fabric.iBus.bmb -> List(/*sdramA0.bmb, */bmbPeripheral.bmb),
+    fabric.dBus.bmb -> List(/*sdramA0.bmb,*/ bmbPeripheral.bmb)
   )
 
 
@@ -174,13 +174,13 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
 //  vgaCd.holdDuration.load(63)
 //  vgaCd.asyncReset(debugCd)
 
-  val sdramCd = ClockDomainResetGenerator()
-  sdramCd.holdDuration.load(63)
-  sdramCd.asyncReset(debugCd)
+  val resetCd = ClockDomainResetGenerator()
+  resetCd.holdDuration.load(63)
+  resetCd.asyncReset(debugCd)
 
   val systemCd = ClockDomainResetGenerator()
   systemCd.holdDuration.load(63)
-  systemCd.asyncReset(sdramCd)
+  systemCd.asyncReset(resetCd)
   systemCd.setInput(
     debugCd.outputClockDomain,
     omitReset = true
@@ -189,26 +189,26 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
   // ...
   val system = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount){
    // val vgaPhy = vga.withRegisterPhy(withColorEn = false)
-    sdramA_cd.load(sdramCd.outputClockDomain)
+//    sdramA_cd.load(sdramCd.outputClockDomain)
   }
 
   // Enable native JTAG debug
-  val debug = system.withDebugBus(debugCd, sdramCd, 0x10B80000).withBscane2(userId = 2)
+  val debug = system.withDebugBus(debugCd, resetCd, 0x10B80000).withBscane2(userId = 2)
 
   // The DDR3 controller use its own clock domain and need peripheral bus access for configuration
-  val sdramDomain = sdramCd.outputClockDomain on new Generator{
-    implicit val interconnect = system.interconnect
-
-    val bmbCc = BmbBridgeGenerator(mapping = SizeMapping(0x100000l, 8 KiB))
-    interconnect.addConnection(system.bmbPeripheral.bmb, bmbCc.bmb).ccByToggle()
-
-    val phyA = XilinxS7PhyBmbGenerator(configAddress = 0x1000)
-    phyA.connect(system.sdramA)
-    interconnect.addConnection(bmbCc.bmb, phyA.ctrl)
-
-    system.sdramA.mapCtrlAt(0x0000)
-    interconnect.addConnection(bmbCc.bmb, system.sdramA.ctrl)
-  }
+//  val sdramDomain = sdramCd.outputClockDomain on new Generator{
+//    implicit val interconnect = system.interconnect
+//
+//    val bmbCc = BmbBridgeGenerator(mapping = SizeMapping(0x100000l, 8 KiB))
+//    interconnect.addConnection(system.bmbPeripheral.bmb, bmbCc.bmb).ccByToggle()
+//
+//    val phyA = XilinxS7PhyBmbGenerator(configAddress = 0x1000)
+//    phyA.connect(system.sdramA)
+//    interconnect.addConnection(bmbCc.bmb, phyA.ctrl)
+//
+//    system.sdramA.mapCtrlAt(0x0000)
+//    interconnect.addConnection(bmbCc.bmb, system.sdramA.ctrl)
+//  }
 
   //Manage clocks and PLL
   val clocking = new Area{
@@ -263,7 +263,7 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
         frequency = FixedFrequency(100 MHz)
       )
     )
-    sdramCd.setInput(
+    resetCd.setInput(
       ClockDomain(
         clock = pll.CLKOUT1,
         frequency = FixedFrequency(150 MHz)
@@ -272,9 +272,9 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
     //vgaCd.setInput(ClockDomain(clk25))
    // system.vga.vgaCd.load(vgaCd.outputClockDomain)
 
-    sdramDomain.phyA.clk90.load(ClockDomain(pll.CLKOUT2))
-    sdramDomain.phyA.serdesClk0.load(ClockDomain(pll.CLKOUT3))
-    sdramDomain.phyA.serdesClk90.load(ClockDomain(pll.CLKOUT4))
+//    sdramDomain.phyA.clk90.load(ClockDomain(pll.CLKOUT2))
+//    sdramDomain.phyA.serdesClk0.load(ClockDomain(pll.CLKOUT3))
+//    sdramDomain.phyA.serdesClk90.load(ClockDomain(pll.CLKOUT4))
   }
 
   // Allow to access the native SPI flash clock pin
@@ -311,16 +311,16 @@ object ArtyA7SmpLinuxAbstract{
     ramA.size.load(8 KiB)
     ramA.hexInit.loadNothing()
 
-    sdramA.coreParameter.load(CoreParameter(
-      portTockenMin = 4,
-      portTockenMax = 8,
-      timingWidth = 4,
-      refWidth = 16,
-      stationCount  = 2,
-      bytePerTaskMax = 64,
-      writeLatencies = List(3),
-      readLatencies = List(5+3, 5+4)
-    ))
+//    sdramA.coreParameter.load(CoreParameter(
+//      portTockenMin = 4,
+//      portTockenMax = 8,
+//      timingWidth = 4,
+//      refWidth = 16,
+//      stationCount  = 2,
+//      bytePerTaskMax = 64,
+//      writeLatencies = List(3),
+//      readLatencies = List(5+3, 5+4)
+//    ))
 
     uartA.parameter load UartCtrlMemoryMappedConfig(
       baudrate = 115200,
@@ -392,7 +392,7 @@ object ArtyA7SmpLinuxAbstract{
     interconnect.setPipelining(fabric.invalidationMonitor.output)(cmdValid = true, cmdReady = true, rspValid = true)
     interconnect.setPipelining(fabric.dBus.bmb)(cmdValid = true, cmdReady = true)
     interconnect.setPipelining(bmbPeripheral.bmb)(cmdHalfRate = true, rspHalfRate = true)
-    interconnect.setPipelining(sdramA0.bmb)(cmdValid = true, cmdReady = true, rspValid = true)
+   // interconnect.setPipelining(sdramA0.bmb)(cmdValid = true, cmdReady = true, rspValid = true)
     interconnect.setPipelining(fabric.iBus.bmb)(cmdValid = true)
     //interconnect.setPipelining(dma.read)(cmdHalfRate = true)
 
@@ -412,10 +412,10 @@ object ArtyA7SmpLinux {
         inlineRom = true
       ).addStandardMemBlackboxing(blackboxByteEnables)
        .generateVerilog(InOutWrapper(new ArtyA7SmpLinux(cpuCount){
-         sdramDomain.phyA.sdramLayout.load(MT41K128M16JT.layout)
+       //  sdramDomain.phyA.sdramLayout.load(MT41K128M16JT.layout)
          ArtyA7SmpLinuxAbstract.default(system)
 
-         system.ramA.hexInit.load("software/standalone/bootloader/build/bootloader.hex")
+         system.ramA.hexInit.load("software/standalone/memoryTest/build/memoryTest.hex")
          setDefinitionName("ArtyA7SmpLinux")
        }))
     BspGenerator("digilent/ArtyA7SmpLinux", report.toplevel, report.toplevel.system.cores(0).dBus)

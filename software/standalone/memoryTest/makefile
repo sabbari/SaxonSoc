@@ -1,4 +1,4 @@
-PROJ_NAME=meomryTest
+PROJ_NAME=memoryTest
 BSP_PATH=../../../bsp/digilent/ArtyA7SmpLinux
 STANDALONE = ..
 
