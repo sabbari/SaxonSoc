@@ -11,7 +11,7 @@
 extern volatile uint32_t start_of_ramtest[];
 extern  volatile uint32_t length_of_ramtest;
 
-#define MAX_WORDS ((int)&length_of_ramtest)// >> 2)
+#define MAX_WORDS ((int)&length_of_ramtest>> 2)
 #define mem start_of_ramtest
 
 

@@ -39,10 +39,7 @@ import vexriscv.plugin.{AesPlugin, FpuPlugin}
 // Define a SoC abstract enough to be used in simulation (no PLL, no PHY)
 class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cpuCount){
   val fabric = withDefaultFabric()
-//
-//  val sdramA_cd = Handle[ClockDomain]
-//  val sdramA = sdramA_cd on SdramXdrBmbGenerator(memoryAddress = 0x80000000l)
-//  val sdramA0 = sdramA.addPort()
+
 
   val gpioA = BmbGpioGenerator(0x00000)
 
@@ -57,45 +54,10 @@ class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cp
     val md = decoder.mdioMasterId(2) //Ethernet phy
   }
 
-//  val mac = BmbMacEthGenerator(0x40000)
-//  mac.connectInterrupt(plic, 3)
-//  val eth = mac.withPhyMii()
+
 
   implicit val bsbInterconnect = BsbInterconnectGenerator()
-//  val dma = new DmaSgGenerator(0x80000){
-//    val vga = new Area{
-//      val channel = createChannel()
-//      channel.fixedBurst(64)
-//      channel.withCircularMode()
-//      channel.fifoMapping load Some(0, 256)
-//      channel.connectInterrupt(plic, 12)
-//
-//      val stream = createOutput(byteCount = 8)
-//      channel.outputsPorts += stream
-//
-//    }
 
-//    val audioOut = new Area{
-//      val channel = createChannel()
-//      channel.fixedBurst(64)
-//      channel.withScatterGatter()
-//      channel.fifoMapping load Some(256, 256)
-//      channel.connectInterrupt(plic, 13)
-//
-//      val stream = createOutput(byteCount = 4)
-//      channel.outputsPorts += stream
-//    }
-//  }
-//    interconnect.addConnection(dma.write, fabric.dBusCoherent.bmb)
-//    interconnect.addConnection(dma.read,  fabric.dBus.bmb)
-//    //interconnect.addConnection(dma.readSg,  fabric.dBus.bmb)
-//    //interconnect.addConnection(dma.writeSg,  fabric.dBusCoherent.bmb)
-//
-//  val vga = BmbVgaCtrlGenerator(0x90000)
-//  bsbInterconnect.connect(dma.vga.stream.output, vga.input)
-
-//  val audioOut = BmbBsbToDeltaSigmaGenerator(0x94000)
-//  bsbInterconnect.connect(dma.audioOut.stream.output, audioOut.input)
 
   val ramA = BmbOnChipRamGenerator(0xA00000l)
   ramA.hexOffset = bmbPeripheral.mapping.lowerBound
@@ -133,35 +95,7 @@ class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cp
   }
 
 
-//  def debug(that : Data) = that.addAttribute("""mark_debug = "true"""")
-//  audioOut.logic.derivate{c =>
-//    debug(c.core.io.input.valid)
-//    debug(c.core.io.input.ready)
-//    debug(c.core.io.run)
-//    debug(c.core.io.rate)
-//  }
-//  dma.logic.derivate{c =>
-//    debug(c.io.interrupts)
-//    debug(c.io.outputs(1).valid)
-//    debug(c.io.outputs(1).ready)
-//    debug(c.io.sgRead.cmd.valid)
-//    debug(c.io.sgRead.cmd.address)
-//    debug(c.io.sgRead.rsp.valid)
-//    debug(c.io.sgRead.rsp.data)
-//    debug(c.channels(1).channelValid)
-//    debug(c.channels(1).descriptorValid)
-//    debug(c.channels(1).interrupts.completion.enable)
-//    debug(c.channels(1).interrupts.completion.valid)
-//    debug(c.channels(1).push.memory)
-//    debug(c.channels(1).push.m2b.address)
-//    debug(c.channels(1).pop.memory)
-//    debug(c.channels(1).pop.b2s.portId)
-//    debug(c.channels(1).fifo.push.available)
-//    debug(c.channels(1).fifo.pop.empty)
-//    debug(c.io.read.cmd.valid)
-//    debug(c.io.read.cmd.address)
-//    debug(c.io.read.rsp.valid)
-//  }
+
 }
 
 class ArtyA7SmpLinux(cpuCount : Int) extends Component{
@@ -188,27 +122,13 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
 
   // ...
   val system = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount){
-   // val vgaPhy = vga.withRegisterPhy(withColorEn = false)
-//    sdramA_cd.load(sdramCd.outputClockDomain)
+
   }
 
   // Enable native JTAG debug
   val debug = system.withDebugBus(debugCd, resetCd, 0x10B80000).withBscane2(userId = 2)
 
-  // The DDR3 controller use its own clock domain and need peripheral bus access for configuration
-//  val sdramDomain = sdramCd.outputClockDomain on new Generator{
-//    implicit val interconnect = system.interconnect
-//
-//    val bmbCc = BmbBridgeGenerator(mapping = SizeMapping(0x100000l, 8 KiB))
-//    interconnect.addConnection(system.bmbPeripheral.bmb, bmbCc.bmb).ccByToggle()
-//
-//    val phyA = XilinxS7PhyBmbGenerator(configAddress = 0x1000)
-//    phyA.connect(system.sdramA)
-//    interconnect.addConnection(bmbCc.bmb, phyA.ctrl)
-//
-//    system.sdramA.mapCtrlAt(0x0000)
-//    interconnect.addConnection(bmbCc.bmb, system.sdramA.ctrl)
-//  }
+
 
   //Manage clocks and PLL
   val clocking = new Area{
@@ -269,12 +189,7 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
         frequency = FixedFrequency(150 MHz)
       )
     )
-    //vgaCd.setInput(ClockDomain(clk25))
-   // system.vga.vgaCd.load(vgaCd.outputClockDomain)
 
-//    sdramDomain.phyA.clk90.load(ClockDomain(pll.CLKOUT2))
-//    sdramDomain.phyA.serdesClk0.load(ClockDomain(pll.CLKOUT3))
-//    sdramDomain.phyA.serdesClk90.load(ClockDomain(pll.CLKOUT4))
   }
 
   // Allow to access the native SPI flash clock pin
@@ -311,16 +226,7 @@ object ArtyA7SmpLinuxAbstract{
     ramA.size.load(8 KiB)
     ramA.hexInit.loadNothing()
 
-//    sdramA.coreParameter.load(CoreParameter(
-//      portTockenMin = 4,
-//      portTockenMax = 8,
-//      timingWidth = 4,
-//      refWidth = 16,
-//      stationCount  = 2,
-//      bytePerTaskMax = 64,
-//      writeLatencies = List(3),
-//      readLatencies = List(5+3, 5+4)
-//    ))
+
 
     uartA.parameter load UartCtrlMemoryMappedConfig(
       baudrate = 115200,
@@ -351,42 +257,7 @@ object ArtyA7SmpLinuxAbstract{
       cmdFifoDepth = 256,
       rspFifoDepth = 256
     )
-//
-//    mac.parameter load MacEthParameter(
-//      phy = PhyParameter(
-//        txDataWidth = 4,
-//        rxDataWidth = 4
-//      ),
-//      rxDataWidth = 32,
-//      rxBufferByteSize = 8*1024,
-//      txDataWidth = 32,
-//      txBufferByteSize = 4*1024
-//    )
 
-//    dma.parameter.layout load DmaMemoryLayout(
-//      bankCount     = 2,
-//      bankWords     = 128,
-//      bankWidth     = 32,
-//      priorityWidth = 2
-//    )
-//
-//    dma.setBmbParameter(
-//      addressWidth = 32,
-//      dataWidth = 64,
-//      lengthWidth = 6
-//    )
-//
-//    vga.parameter load BmbVgaCtrlParameter(
-//      rgbConfig = RgbConfig(4,4,4)
-//    )
-
-//    audioOut.parameter load BsbToDeltaSigmaParameter(
-//      channels = 2,
-//      channelWidth = 16,
-//      rateWidth = 16
-//    )
-
-    // Add some interconnect pipelining to improve FMax
     for(cpu <- cores) interconnect.setPipelining(cpu.dBus)(cmdValid = true, invValid = true, ackValid = true, syncValid = true)
     interconnect.setPipelining(fabric.exclusiveMonitor.input)(cmdValid = true, cmdReady = true, rspValid = true)
     interconnect.setPipelining(fabric.invalidationMonitor.output)(cmdValid = true, cmdReady = true, rspValid = true)
