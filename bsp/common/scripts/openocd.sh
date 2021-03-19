@@ -18,11 +18,14 @@ saxon_fpga_flash(){
   $SAXON_ROOT/openocd_riscv/src/openocd -s $SAXON_ROOT/openocd_riscv/tcl -s $SAXON_BSP_PATH/openocd -c "set CPU0_YAML cpu0.yaml" -f usb_connect.cfg -f fpga_flash.cfg
 }
 
+saxon_openocd_connect_hs2(){
+  cd $SAXON_SOC
+  $SAXON_ROOT/openocd_riscv/src/openocd -s $SAXON_ROOT/openocd_riscv/tcl -s $SAXON_BSP_PATH/openocd -c 'set CPU0_YAML cpu0.yaml' -f hs2_connect.cfg -f soc_init.cfg
+}
 saxon_openocd_connect(){
   cd $SAXON_SOC
   $SAXON_ROOT/openocd_riscv/src/openocd -s $SAXON_ROOT/openocd_riscv/tcl -s $SAXON_BSP_PATH/openocd -c 'set CPU0_YAML cpu0.yaml' -f usb_connect.cfg -f soc_init.cfg
 }
-
 saxon_buildroot_load(){
   cd $SAXON_SOC
   $SAXON_ROOT/openocd_riscv/src/openocd -s $SAXON_ROOT/openocd_riscv/tcl -s $SAXON_BSP_PATH/openocd -c 'set CPU0_YAML cpu0.yaml'  -c "set SAXON_BUILDROOT_IMAGE_PATH $SAXON_BUILDROOT_IMAGE_PATH" -f usb_connect.cfg -f soc_init.cfg -f linux_boot.cfg -c 'exit'

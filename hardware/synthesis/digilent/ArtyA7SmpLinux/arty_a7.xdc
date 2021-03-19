@@ -10,16 +10,16 @@ create_clock -period 10.000 -name clocking_GCLK100 [get_nets clocking_GCLK100]
 set_clock_groups -asynchronous -group clocking_pll_CLKOUT0 -group clocking_pll_CLKOUT1
 
 # JTAG
-set_property -dict {PACKAGE_PIN T18 IOSTANDARD LVCMOS33} [get_ports debug_master_jtag_tms]
-set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33} [get_ports debug_master_jtag_tdo]
-set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports debug_master_jtag_tdi]
-set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33} [get_ports debug_master_jtag_tck]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets debug_master_jtag_tck_IBUF]
+set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tms]
+set_property -dict {PACKAGE_PIN D3 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tdi]
+set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tdo]
+set_property -dict {PACKAGE_PIN F3 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tck]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets debug_jtag_tck_IBUF]
 
 # UART
 set_property -dict {PACKAGE_PIN D10 IOSTANDARD LVCMOS33} [get_ports system_uartA_uart_txd]
 set_property -dict {PACKAGE_PIN A9 IOSTANDARD LVCMOS33} [get_ports system_uartA_uart_rxd]
-
+#
 ## Buttons
 set_property -dict {PACKAGE_PIN D9 IOSTANDARD LVCMOS33} [get_ports {system_gpioA_gpio[0]}]
 set_property -dict {PACKAGE_PIN C9 IOSTANDARD LVCMOS33} [get_ports {system_gpioA_gpio[1]}]
@@ -68,10 +68,10 @@ set_property -dict {PACKAGE_PIN K17 IOSTANDARD LVCMOS33} [get_ports {system_spiA
 set_property -dict {PACKAGE_PIN K18 IOSTANDARD LVCMOS33} [get_ports {system_spiA_flash_data[1]}]
 
 # SDCARD
-set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports {system_spiA_sdcard_ss[0]}]
-set_property -dict {PACKAGE_PIN D3 IOSTANDARD LVCMOS33} [get_ports {system_spiA_sdcard_data[0]}]
-set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS33} [get_ports {system_spiA_sdcard_data[1]}]
-set_property -dict {PACKAGE_PIN F3 IOSTANDARD LVCMOS33} [get_ports system_spiA_sdcard_sclk]
+#set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports {system_spiA_sdcard_ss[0]}]
+#set_property -dict {PACKAGE_PIN D3 IOSTANDARD LVCMOS33} [get_ports {system_spiA_sdcard_data[0]}]
+#set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS33} [get_ports {system_spiA_sdcard_data[1]}]
+#set_property -dict {PACKAGE_PIN F3 IOSTANDARD LVCMOS33} [get_ports system_spiA_sdcard_sclk]
 
 # User SPI
 set_property -dict {PACKAGE_PIN G1 IOSTANDARD LVCMOS33} [get_ports {system_spiA_user_data[1]}]
@@ -80,8 +80,8 @@ set_property -dict {PACKAGE_PIN F1 IOSTANDARD LVCMOS33} [get_ports system_spiA_u
 #set_property -dict { PACKAGE_PIN C1    IOSTANDARD LVCMOS33 } [get_ports { ck_ss }]; #IO_L16N_T2_35 Sch=ck_ss
 
 # Audio
-set_property -dict {PACKAGE_PIN U11 IOSTANDARD LVCMOS33} [get_ports {system_audioOut_outputs[0]}]
-set_property -dict {PACKAGE_PIN V16 IOSTANDARD LVCMOS33} [get_ports {system_audioOut_outputs[1]}]
+#set_property -dict {PACKAGE_PIN U11 IOSTANDARD LVCMOS33} [get_ports {system_audioOut_outputs[0]}]
+#set_property -dict {PACKAGE_PIN V16 IOSTANDARD LVCMOS33} [get_ports {system_audioOut_outputs[1]}]
 
 
 set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports clocking_GCLK100]
@@ -91,93 +91,94 @@ create_clock -period 3.333 -name {sdramDomain_phyA_sdram_DQS[1]} -waveform {0.00
 
 set_property INTERNAL_VREF 0.675 [get_iobanks 34]
 
-set_property -dict {PACKAGE_PIN R2 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[0]}]
-set_property -dict {PACKAGE_PIN M6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[1]}]
-set_property -dict {PACKAGE_PIN N4 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[2]}]
-set_property -dict {PACKAGE_PIN T1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[3]}]
-set_property -dict {PACKAGE_PIN N6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[4]}]
-set_property -dict {PACKAGE_PIN R7 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[5]}]
-set_property -dict {PACKAGE_PIN V6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[6]}]
-set_property -dict {PACKAGE_PIN U7 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[7]}]
-set_property -dict {PACKAGE_PIN R8 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[8]}]
-set_property -dict {PACKAGE_PIN V7 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[9]}]
-set_property -dict {PACKAGE_PIN R6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[10]}]
-set_property -dict {PACKAGE_PIN U6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[11]}]
-set_property -dict {PACKAGE_PIN T6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[12]}]
-set_property -dict {PACKAGE_PIN T8 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[13]}]
+#set_property -dict {PACKAGE_PIN R2 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[0]}]
+#set_property -dict {PACKAGE_PIN M6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[1]}]
+#set_property -dict {PACKAGE_PIN N4 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[2]}]
+#set_property -dict {PACKAGE_PIN T1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[3]}]
+#set_property -dict {PACKAGE_PIN N6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[4]}]
+#set_property -dict {PACKAGE_PIN R7 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[5]}]
+#set_property -dict {PACKAGE_PIN V6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[6]}]
+#set_property -dict {PACKAGE_PIN U7 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[7]}]
+#set_property -dict {PACKAGE_PIN R8 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[8]}]
+#set_property -dict {PACKAGE_PIN V7 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[9]}]
+#set_property -dict {PACKAGE_PIN R6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[10]}]
+#set_property -dict {PACKAGE_PIN U6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[11]}]
+#set_property -dict {PACKAGE_PIN T6 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[12]}]
+#set_property -dict {PACKAGE_PIN T8 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_ADDR[13]}]
 
 
-set_property -dict {PACKAGE_PIN R1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_BA[0]}]
-set_property -dict {PACKAGE_PIN P4 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_BA[1]}]
-set_property -dict {PACKAGE_PIN P2 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_BA[2]}]
-set_property -dict {PACKAGE_PIN P3 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_RASn]
-set_property -dict {PACKAGE_PIN M4 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CASn]
-set_property -dict {PACKAGE_PIN P5 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_WEn]
-set_property -dict {PACKAGE_PIN U8 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CSn]
+#set_property -dict {PACKAGE_PIN R1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_BA[0]}]
+#set_property -dict {PACKAGE_PIN P4 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_BA[1]}]
+#set_property -dict {PACKAGE_PIN P2 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_BA[2]}]
+#set_property -dict {PACKAGE_PIN P3 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_RASn]
+#set_property -dict {PACKAGE_PIN M4 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CASn]
+#set_property -dict {PACKAGE_PIN P5 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_WEn]
+#set_property -dict {PACKAGE_PIN U8 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CSn]
 set_property -dict {PACKAGE_PIN L1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_DM[0]}]
-set_property -dict {PACKAGE_PIN U1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_DM[1]}]
-
-set_property -dict {PACKAGE_PIN K5 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[0]}]
-set_property -dict {PACKAGE_PIN L3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[1]}]
-set_property -dict {PACKAGE_PIN K3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[2]}]
-set_property -dict {PACKAGE_PIN L6 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[3]}]
-set_property -dict {PACKAGE_PIN M3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[4]}]
-set_property -dict {PACKAGE_PIN M1 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[5]}]
-set_property -dict {PACKAGE_PIN L4 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[6]}]
-set_property -dict {PACKAGE_PIN M2 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[7]}]
-set_property -dict {PACKAGE_PIN V4 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[8]}]
-set_property -dict {PACKAGE_PIN T5 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[9]}]
-set_property -dict {PACKAGE_PIN U4 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[10]}]
-set_property -dict {PACKAGE_PIN V5 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[11]}]
-set_property -dict {PACKAGE_PIN V1 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[12]}]
-set_property -dict {PACKAGE_PIN T3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[13]}]
-set_property -dict {PACKAGE_PIN U3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[14]}]
-set_property -dict {PACKAGE_PIN R3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[15]}]
-
-
-set_property -dict {PACKAGE_PIN N2 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQS[0]}]
-set_property -dict {PACKAGE_PIN U2 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQS[1]}]
-set_property -dict {PACKAGE_PIN N1 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQSn[0]}]
-set_property -dict {PACKAGE_PIN V2 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQSn[1]}]
-
-set_property -dict {PACKAGE_PIN U9 IOSTANDARD DIFF_SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CK]
-set_property -dict {PACKAGE_PIN V9 IOSTANDARD DIFF_SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CKn]
-set_property -dict {PACKAGE_PIN N5 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CKE]
-set_property -dict {PACKAGE_PIN R5 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_ODT]
-set_property -dict {PACKAGE_PIN K6 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_RESETn]
+#set_property -dict {PACKAGE_PIN U1 IOSTANDARD SSTL135 SLEW FAST} [get_ports {sdramDomain_phyA_sdram_DM[1]}]
+#
+#set_property -dict {PACKAGE_PIN K5 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[0]}]
+#set_property -dict {PACKAGE_PIN L3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[1]}]
+#set_property -dict {PACKAGE_PIN K3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[2]}]
+#set_property -dict {PACKAGE_PIN L6 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[3]}]
+#set_property -dict {PACKAGE_PIN M3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[4]}]
+#set_property -dict {PACKAGE_PIN M1 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[5]}]
+#set_property -dict {PACKAGE_PIN L4 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[6]}]
+#set_property -dict {PACKAGE_PIN M2 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[7]}]
+#set_property -dict {PACKAGE_PIN V4 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[8]}]
+#set_property -dict {PACKAGE_PIN T5 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[9]}]
+#set_property -dict {PACKAGE_PIN U4 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[10]}]
+#set_property -dict {PACKAGE_PIN V5 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[11]}]
+#set_property -dict {PACKAGE_PIN V1 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[12]}]
+#set_property -dict {PACKAGE_PIN T3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[13]}]
+#set_property -dict {PACKAGE_PIN U3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[14]}]
+#set_property -dict {PACKAGE_PIN R3 IOSTANDARD SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQ[15]}]
 
 
+#set_property -dict {PACKAGE_PIN N2 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQS[0]}]
+#set_property -dict {PACKAGE_PIN U2 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQS[1]}]
+#set_property -dict {PACKAGE_PIN N1 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQSn[0]}]
+#set_property -dict {PACKAGE_PIN V2 IOSTANDARD DIFF_SSTL135 SLEW FAST IN_TERM UNTUNED_SPLIT_50} [get_ports {sdramDomain_phyA_sdram_DQSn[1]}]
 
-set_property -dict { PACKAGE_PIN G13   IOSTANDARD LVCMOS33 } [get_ports { ja[0] }]; #IO_0_15 Sch=ja[1]
-set_property -dict { PACKAGE_PIN B11   IOSTANDARD LVCMOS33 } [get_ports { ja[1] }]; #IO_L4P_T0_15 Sch=ja[2]
-set_property -dict { PACKAGE_PIN A11   IOSTANDARD LVCMOS33 } [get_ports { ja[2] }]; #IO_L4N_T0_15 Sch=ja[3]
-set_property -dict { PACKAGE_PIN D12   IOSTANDARD LVCMOS33 } [get_ports { ja[3] }]; #IO_L6P_T0_15 Sch=ja[4]
-set_property -dict { PACKAGE_PIN D13   IOSTANDARD LVCMOS33 } [get_ports { ja[4] }]; #IO_L6N_T0_VREF_15 Sch=ja[7]
-set_property -dict { PACKAGE_PIN B18   IOSTANDARD LVCMOS33 } [get_ports { ja[5] }]; #IO_L10P_T1_AD11P_15 Sch=ja[8]
-set_property -dict { PACKAGE_PIN A18   IOSTANDARD LVCMOS33 } [get_ports { ja[6] }]; #IO_L10N_T1_AD11N_15 Sch=ja[9]
-set_property -dict { PACKAGE_PIN E15   IOSTANDARD LVCMOS33 } [get_ports { ja[7] }]; #IO_L11P_T1_SRCC_15 Sch=ja[10]
+#set_property -dict {PACKAGE_PIN U9 IOSTANDARD DIFF_SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CK]
+#set_property -dict {PACKAGE_PIN V9 IOSTANDARD DIFF_SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CKn]
+#set_property -dict {PACKAGE_PIN N5 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_CKE]
+#set_property -dict {PACKAGE_PIN R5 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_ODT]
+#set_property -dict {PACKAGE_PIN K6 IOSTANDARD SSTL135 SLEW FAST} [get_ports sdramDomain_phyA_sdram_RESETn]
+
+
+
+#set_property -dict { PACKAGE_PIN G13   IOSTANDARD LVCMOS33 } [get_ports { ja[0] }]; #IO_0_15 Sch=ja[1]
+#set_property -dict { PACKAGE_PIN B11   IOSTANDARD LVCMOS33 } [get_ports { ja[1] }]; #IO_L4P_T0_15 Sch=ja[2]
+#set_property -dict { PACKAGE_PIN A11   IOSTANDARD LVCMOS33 } [get_ports { ja[2] }]; #IO_L4N_T0_15 Sch=ja[3]
+#set_property -dict { PACKAGE_PIN D12   IOSTANDARD LVCMOS33 } [get_ports { ja[3] }]; #IO_L6P_T0_15 Sch=ja[4]
+#set_property -dict { PACKAGE_PIN D13   IOSTANDARD LVCMOS33 } [get_ports { ja[4] }]; #IO_L6N_T0_VREF_15 Sch=ja[7]
+#set_property -dict { PACKAGE_PIN B18   IOSTANDARD LVCMOS33 } [get_ports { ja[5] }]; #IO_L10P_T1_AD11P_15 Sch=ja[8]
+#set_property -dict { PACKAGE_PIN A18   IOSTANDARD LVCMOS33 } [get_ports { ja[6] }]; #IO_L10N_T1_AD11N_15 Sch=ja[9]
+#set_property -dict { PACKAGE_PIN E15   IOSTANDARD LVCMOS33 } [get_ports { ja[7] }]; #IO_L11P_T1_SRCC_15 Sch=ja[10]
 
 
 # SMSC Ethernet PHY
-set_property -dict {PACKAGE_PIN D17 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_COL]
-set_property -dict {PACKAGE_PIN G14 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_CRS]
+#set_property -dict {PACKAGE_PIN D17 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_COL]
+#set_property -dict {PACKAGE_PIN G14 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_CRS]
 set_property -dict {PACKAGE_PIN F16 IOSTANDARD LVCMOS33} [get_ports system_spiA_md_C]
 set_property -dict {PACKAGE_PIN K13 IOSTANDARD LVCMOS33} [get_ports system_spiA_md_IO]
 set_property -dict {PACKAGE_PIN G18 IOSTANDARD LVCMOS33} [get_ports clocking_clk25]
-#set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports { system_gpioA_gpio[14] }]; #IO_L20P_T3_A20_15 Sch=eth_rstn
-set_property -dict {PACKAGE_PIN F15 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_CLK]
-set_property -dict {PACKAGE_PIN G16 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_DV]
-set_property -dict {PACKAGE_PIN D18 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[0]}]
-set_property -dict {PACKAGE_PIN E17 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[1]}]
-set_property -dict {PACKAGE_PIN E18 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[2]}]
-set_property -dict {PACKAGE_PIN G17 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[3]}]
-set_property -dict {PACKAGE_PIN C17 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_ER]
-set_property -dict {PACKAGE_PIN H16 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_TX_CLK]
-set_property -dict {PACKAGE_PIN H15 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_TX_EN]
-set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[0]}]
-set_property -dict {PACKAGE_PIN J14 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[1]}]
-set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[2]}]
-set_property -dict {PACKAGE_PIN H17 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[3]}]
+##set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports { system_gpioA_gpio[14] }]; #IO_L20P_T3_A20_15 Sch=eth_rstn
+#set_property -dict {PACKAGE_PIN F15 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_CLK]
+#set_property -dict {PACKAGE_PIN G16 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_DV]
+#set_property -dict {PACKAGE_PIN D18 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[0]}]
+#set_property -dict {PACKAGE_PIN E17 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[1]}]
+#set_property -dict {PACKAGE_PIN E18 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[2]}]
+#set_property -dict {PACKAGE_PIN G17 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_RX_D[3]}]
+#set_property -dict {PACKAGE_PIN C17 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_RX_ER]
+#set_property -dict {PACKAGE_PIN H16 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_TX_CLK]
+#set_property -dict {PACKAGE_PIN H15 IOSTANDARD LVCMOS33} [get_ports system_eth_mii_TX_EN]
+#set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[0]}]
+#set_property -dict {PACKAGE_PIN J14 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[1]}]
+#set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[2]}]
+#set_property -dict {PACKAGE_PIN H17 IOSTANDARD LVCMOS33} [get_ports {system_eth_mii_TX_D[3]}]
+
 
 
 ##Pmod Header JB
@@ -201,6 +202,3 @@ set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports system_vgaPh
 set_property -dict {PACKAGE_PIN V14 IOSTANDARD LVCMOS33} [get_ports system_vgaPhy_vSync]
 #set_property -dict { PACKAGE_PIN T13   IOSTANDARD LVCMOS33 } [get_ports { jc[6] }]; #IO_L23P_T3_A03_D19_14 Sch=jc_p[4]
 #set_property -dict { PACKAGE_PIN U13   IOSTANDARD LVCMOS33 } [get_ports { jc[7] }]; #IO_L23N_T3_A02_D18_14 Sch=jc_n[4]
-
-
-

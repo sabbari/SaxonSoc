@@ -39,10 +39,6 @@ import vexriscv.plugin.{AesPlugin, FpuPlugin}
 // Define a SoC abstract enough to be used in simulation (no PLL, no PHY)
 class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cpuCount){
   val fabric = withDefaultFabric()
-//
-//  val sdramA_cd = Handle[ClockDomain]
-//  val sdramA = sdramA_cd on SdramXdrBmbGenerator(memoryAddress = 0x80000000l)
-//  val sdramA0 = sdramA.addPort()
 
   val gpioA = BmbGpioGenerator(0x00000)
 
@@ -53,49 +49,14 @@ class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cp
     val decoder = SpiPhyDecoderGenerator(phy)
     val user = decoder.spiMasterNone()
     val flash = decoder.spiMasterId(0)
-    val sdcard = decoder.spiMasterId(1)
+    //val sdcard = decoder.spiMasterId(1)
     val md = decoder.mdioMasterId(2) //Ethernet phy
   }
 
-//  val mac = BmbMacEthGenerator(0x40000)
-//  mac.connectInterrupt(plic, 3)
-//  val eth = mac.withPhyMii()
+
 
   implicit val bsbInterconnect = BsbInterconnectGenerator()
-//  val dma = new DmaSgGenerator(0x80000){
-//    val vga = new Area{
-//      val channel = createChannel()
-//      channel.fixedBurst(64)
-//      channel.withCircularMode()
-//      channel.fifoMapping load Some(0, 256)
-//      channel.connectInterrupt(plic, 12)
-//
-//      val stream = createOutput(byteCount = 8)
-//      channel.outputsPorts += stream
-//
-//    }
 
-//    val audioOut = new Area{
-//      val channel = createChannel()
-//      channel.fixedBurst(64)
-//      channel.withScatterGatter()
-//      channel.fifoMapping load Some(256, 256)
-//      channel.connectInterrupt(plic, 13)
-//
-//      val stream = createOutput(byteCount = 4)
-//      channel.outputsPorts += stream
-//    }
-//  }
-//    interconnect.addConnection(dma.write, fabric.dBusCoherent.bmb)
-//    interconnect.addConnection(dma.read,  fabric.dBus.bmb)
-//    //interconnect.addConnection(dma.readSg,  fabric.dBus.bmb)
-//    //interconnect.addConnection(dma.writeSg,  fabric.dBusCoherent.bmb)
-//
-//  val vga = BmbVgaCtrlGenerator(0x90000)
-//  bsbInterconnect.connect(dma.vga.stream.output, vga.input)
-
-//  val audioOut = BmbBsbToDeltaSigmaGenerator(0x94000)
-//  bsbInterconnect.connect(dma.audioOut.stream.output, audioOut.input)
 
   val ramA = BmbOnChipRamGenerator(0xA00000l)
   ramA.hexOffset = bmbPeripheral.mapping.lowerBound
@@ -133,35 +94,7 @@ class ArtyA7SmpLinuxAbstract(cpuCount : Int) extends VexRiscvClusterGenerator(cp
   }
 
 
-//  def debug(that : Data) = that.addAttribute("""mark_debug = "true"""")
-//  audioOut.logic.derivate{c =>
-//    debug(c.core.io.input.valid)
-//    debug(c.core.io.input.ready)
-//    debug(c.core.io.run)
-//    debug(c.core.io.rate)
-//  }
-//  dma.logic.derivate{c =>
-//    debug(c.io.interrupts)
-//    debug(c.io.outputs(1).valid)
-//    debug(c.io.outputs(1).ready)
-//    debug(c.io.sgRead.cmd.valid)
-//    debug(c.io.sgRead.cmd.address)
-//    debug(c.io.sgRead.rsp.valid)
-//    debug(c.io.sgRead.rsp.data)
-//    debug(c.channels(1).channelValid)
-//    debug(c.channels(1).descriptorValid)
-//    debug(c.channels(1).interrupts.completion.enable)
-//    debug(c.channels(1).interrupts.completion.valid)
-//    debug(c.channels(1).push.memory)
-//    debug(c.channels(1).push.m2b.address)
-//    debug(c.channels(1).pop.memory)
-//    debug(c.channels(1).pop.b2s.portId)
-//    debug(c.channels(1).fifo.push.available)
-//    debug(c.channels(1).fifo.pop.empty)
-//    debug(c.io.read.cmd.valid)
-//    debug(c.io.read.cmd.address)
-//    debug(c.io.read.rsp.valid)
-//  }
+
 }
 
 class ArtyA7SmpLinux(cpuCount : Int) extends Component{
@@ -170,9 +103,7 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
   debugCd.holdDuration.load(4095)
   debugCd.enablePowerOnReset()
 
-//  val vgaCd = ClockDomainResetGenerator()
-//  vgaCd.holdDuration.load(63)
-//  vgaCd.asyncReset(debugCd)
+
 
   val resetCd = ClockDomainResetGenerator()
   resetCd.holdDuration.load(63)
@@ -193,22 +124,8 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
   }
 
   // Enable native JTAG debug
-  val debug = system.withDebugBus(debugCd, resetCd, 0x10B80000).withBscane2(userId = 2)
-
-  // The DDR3 controller use its own clock domain and need peripheral bus access for configuration
-//  val sdramDomain = sdramCd.outputClockDomain on new Generator{
-//    implicit val interconnect = system.interconnect
-//
-//    val bmbCc = BmbBridgeGenerator(mapping = SizeMapping(0x100000l, 8 KiB))
-//    interconnect.addConnection(system.bmbPeripheral.bmb, bmbCc.bmb).ccByToggle()
-//
-//    val phyA = XilinxS7PhyBmbGenerator(configAddress = 0x1000)
-//    phyA.connect(system.sdramA)
-//    interconnect.addConnection(bmbCc.bmb, phyA.ctrl)
-//
-//    system.sdramA.mapCtrlAt(0x0000)
-//    interconnect.addConnection(bmbCc.bmb, system.sdramA.ctrl)
-//  }
+  //val debug = system.withDebugBus(debugCd, systemCd, 0x10B80000).withBscane2(userId = 2)
+    val debug = system.withDebugBus(debugCd, systemCd, 0x10B80000).withJtag()
 
   //Manage clocks and PLL
   val clocking = new Area{
@@ -311,22 +228,11 @@ object ArtyA7SmpLinuxAbstract{
     ramA.size.load(8 KiB)
     ramA.hexInit.loadNothing()
 
-//    sdramA.coreParameter.load(CoreParameter(
-//      portTockenMin = 4,
-//      portTockenMax = 8,
-//      timingWidth = 4,
-//      refWidth = 16,
-//      stationCount  = 2,
-//      bytePerTaskMax = 64,
-//      writeLatencies = List(3),
-//      readLatencies = List(5+3, 5+4)
-//    ))
+
 
     uartA.parameter load UartCtrlMemoryMappedConfig(
       baudrate = 115200,
-      //baudrate    = 9600,
       txFifoDepth = 128,
-      //txFifoDepth = 512,
       rxFifoDepth = 128
     )
 
@@ -351,42 +257,7 @@ object ArtyA7SmpLinuxAbstract{
       cmdFifoDepth = 256,
       rspFifoDepth = 256
     )
-//
-//    mac.parameter load MacEthParameter(
-//      phy = PhyParameter(
-//        txDataWidth = 4,
-//        rxDataWidth = 4
-//      ),
-//      rxDataWidth = 32,
-//      rxBufferByteSize = 8*1024,
-//      txDataWidth = 32,
-//      txBufferByteSize = 4*1024
-//    )
 
-//    dma.parameter.layout load DmaMemoryLayout(
-//      bankCount     = 2,
-//      bankWords     = 128,
-//      bankWidth     = 32,
-//      priorityWidth = 2
-//    )
-//
-//    dma.setBmbParameter(
-//      addressWidth = 32,
-//      dataWidth = 64,
-//      lengthWidth = 6
-//    )
-//
-//    vga.parameter load BmbVgaCtrlParameter(
-//      rgbConfig = RgbConfig(4,4,4)
-//    )
-
-//    audioOut.parameter load BsbToDeltaSigmaParameter(
-//      channels = 2,
-//      channelWidth = 16,
-//      rateWidth = 16
-//    )
-
-    // Add some interconnect pipelining to improve FMax
     for(cpu <- cores) interconnect.setPipelining(cpu.dBus)(cmdValid = true, invValid = true, ackValid = true, syncValid = true)
     interconnect.setPipelining(fabric.exclusiveMonitor.input)(cmdValid = true, cmdReady = true, rspValid = true)
     interconnect.setPipelining(fabric.invalidationMonitor.output)(cmdValid = true, cmdReady = true, rspValid = true)
@@ -412,9 +283,7 @@ object ArtyA7SmpLinux {
         inlineRom = true
       ).addStandardMemBlackboxing(blackboxByteEnables)
        .generateVerilog(InOutWrapper(new ArtyA7SmpLinux(cpuCount){
-       //  sdramDomain.phyA.sdramLayout.load(MT41K128M16JT.layout)
          ArtyA7SmpLinuxAbstract.default(system)
-
          system.ramA.hexInit.load("software/standalone/memoryTest/build/memoryTest.hex")
          setDefinitionName("ArtyA7SmpLinux")
        }))
@@ -477,7 +346,7 @@ object VgaDisplaySim{
 }
 
 
-/*object ArtyA7SmpLinuxSystemSim {
+object ArtyA7SmpLinuxSystemSim {
   import spinal.core.sim._
 
   def main(args: Array[String]): Unit = {
@@ -489,7 +358,7 @@ object VgaDisplaySim{
     }
 
     val config = parser.parse(args, Config(
-      trace = false,
+      trace = true,
       bin = "software/standalone/timerAndGpioInterruptDemo/build/timerAndGpioInterruptDemo_spinal_sim.bin"
     )) match {
       case Some(config) => config
@@ -499,10 +368,10 @@ object VgaDisplaySim{
 
     val simConfig = SimConfig
     simConfig.allOptimisation
-//    simConfig.withFstWave
-    simConfig.addSimulatorFlag("-Wno-MULTIDRIVEN")
+  // simConfig.withFstWave
+    simConfig.addSimulatorFlag("-Wno-MULTIDRIVEN -Wno-LATCH")
 
-    simConfig.compile(new Component{
+    simConfig.withWave.compile(new Component{
       val debugCd = ClockDomainResetGenerator()
       debugCd.enablePowerOnReset()
       debugCd.holdDuration.load(63)
@@ -510,11 +379,14 @@ object VgaDisplaySim{
         frequency = FixedFrequency(100 MHz)
       )
 
-      val systemCd = ClockDomainResetGenerator()
-      systemCd.holdDuration.load(63)
-      systemCd.setInput(debugCd)
+     val systemCd = ClockDomainResetGenerator()
+     systemCd.holdDuration.load(63)
+     systemCd.setInput(debugCd)
 
-      val top = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount = 1) {
+
+
+
+      val top = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount = 2) {
 
         //      val vgaCd = ClockDomainResetGenerator()
         //      vgaCd.holdDuration.load(63)
@@ -523,24 +395,18 @@ object VgaDisplaySim{
         //
         //      vga.vgaCd.merge(vgaCd.outputClockDomain)
 
-        vga.output.derivate(_.simPublic())
 
-        vga.vgaCd.load(systemCd.outputClockDomain)
 
-        val phy = RtlPhyGenerator()
-        phy.layout.load(XilinxS7Phy.phyLayout(MT41K128M16JT.layout, 2))
-        phy.connect(sdramA)
 
-        sdramA.mapCtrlAt(0x100000)
+
+
 
         val jtagTap = withDebugBus(debugCd, systemCd, address = 0x10B80000).withJtag()
 //        withoutDebug
 
-        sdramA_cd.load(systemCd.outputClockDomain)
 
-        sdramA0.bmb.derivate(_.cmd.simPublic())
         ArtyA7SmpLinuxAbstract.default(this)
-        ramA.hexInit.load("software/standalone/bootloader/build/bootloader.hex")//_spinal_sim.hex")
+        ramA.hexInit.load("software/standalone/memoryTest/build/memoryTest.hex")//_spinal_sim.hex")
       }
     }.setDefinitionName("miaou2")).doSimUntilVoid("test", 42){dut =>
       val debugClkPeriod = (1e12/dut.debugCd.inputClockDomain.frequency.getValue.toDouble).toLong
@@ -611,10 +477,10 @@ object VgaDisplaySim{
 //        }
 //      }
 
-      val images = "../buildroot-build/images/"
-
-      dut.top.phy.logic.loadBin(0x00F80000, images + "fw_jump.bin")
-      dut.top.phy.logic.loadBin(0x00F00000, images + "u-boot.bin")
+//      val images = "../buildroot-build/images/"
+//
+//      dut.top.phy.logic.loadBin(0x00F80000, images + "fw_jump.bin")
+//      dut.top.phy.logic.loadBin(0x00F00000, images + "u-boot.bin")
 //      dut.phy.logic.loadBin(0x00000000, images + "Image")
 //      dut.phy.logic.loadBin(0x00FF0000, images + "linux.dtb")
 //      dut.phy.logic.loadBin(0x00FFFFC0, images + "rootfs.cpio.uboot")
@@ -628,10 +494,10 @@ object VgaDisplaySim{
       //dut.phy.logic.loadBin(0x00F80000, "software/standalone/dhrystone/build/dhrystone.bin")
 //      dut.phy.logic.loadBin(0x00F80000, "software/standalone/timerAndGpioInterruptDemo/build/timerAndGpioInterruptDemo_spinal_sim.bin")
 //      dut.phy.logic.loadBin(0x00F80000, "software/standalone/freertosDemo/build/freertosDemo_spinal_sim.bin")
-      println("DRAM loading done")
+      //println("DRAM loading done")
     }
   }
-}*/
+}
 
 
 //object MemoryTraceAnalyse extends App{
