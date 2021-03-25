@@ -1,9 +1,10 @@
 package saxon.board.digilent
 
+import mylib.JtagTap_tesic
+
 import java.awt.image.BufferedImage
 import java.awt.{Color, Dimension, Graphics}
 import java.io.{ByteArrayOutputStream, FileInputStream, FileOutputStream}
-
 import javax.swing.{JFrame, JPanel, WindowConstants}
 import saxon.common.I2cModel
 import saxon._
@@ -30,6 +31,7 @@ import spinal.lib.memory.sdram.sdr._
 import spinal.lib.memory.sdram.xdr.CoreParameter
 import spinal.lib.memory.sdram.xdr.phy.XilinxS7Phy
 import spinal.lib.misc.analog.{BmbBsbToDeltaSigmaGenerator, BsbToDeltaSigmaParameter}
+import spinal.lib.{StreamFifo, slave}
 import spinal.lib.system.dma.sg.{DmaMemoryLayout, DmaSgGenerator}
 import vexriscv.demo.smp.VexRiscvSmpClusterGen
 import vexriscv.ip.fpu.{FpuCore, FpuParameter}
@@ -103,7 +105,9 @@ class ArtyA7SmpLinux(cpuCount : Int) extends Component{
   debugCd.holdDuration.load(4095)
   debugCd.enablePowerOnReset()
 
-
+/*  val jtag = slave(Jtag())
+  val tap = new JtagTap(jtag,4 )
+  val idcodeArea  = tap.idcode(B"x10001fff") (instructionId=1)*/
 
   val resetCd = ClockDomainResetGenerator()
   resetCd.holdDuration.load(63)
@@ -275,7 +279,7 @@ object ArtyA7SmpLinuxAbstract{
 object ArtyA7SmpLinux {
   //Generate the SoC
   def main(args: Array[String]): Unit = {
-    val cpuCount = sys.env.apply("SAXON_CPU_COUNT").toInt
+    val cpuCount = 2//sys.env.apply("SAXON_CPU_COUNT").toInt
 
     val report = SpinalRtlConfig
       .copy(
@@ -398,9 +402,15 @@ object ArtyA7SmpLinuxSystemSim {
 
 
 
-
-
-
+        val jtag= slave(Jtag()).setName("Tesic")
+        val jtagArea = ClockDomain(jtag.tck,debugCd.outputClockDomain.reset)(new Area{
+          val myFifo= StreamFifo(UInt(32 bits),5)
+          val tap = new JtagTap_tesic(jtag, 4)
+          val idcodeArea = tap.idcode(B"x10005FFF")(1)
+          val bypassarea=tap.bypass()(2)
+          val h2t=tap.h2t(myFifo.io.push)(3)
+          val t2h=tap.t2h(myFifo.io.pop)(4)
+        })
         val jtagTap = withDebugBus(debugCd, systemCd, address = 0x10B80000).withJtag()
 //        withoutDebug
 
@@ -419,7 +429,6 @@ object ArtyA7SmpLinuxSystemSim {
 
 //      dut.vgaCd.inputClockDomain.get.forkStimulus(40000)
 //      clockDomain.forkSimSpeedPrinter(2.0)
-
 
       fork{
         val at = 0
@@ -442,8 +451,9 @@ object ArtyA7SmpLinuxSystemSim {
       }
 
       val tcpJtag = JtagTcp(
-        jtag = dut.top.jtagTap.jtag,
-        jtagClkPeriod = jtagClkPeriod
+       //jtag = dut.top.jtagTap.jtag,
+        jtag = dut.top.jtag,
+       jtagClkPeriod = jtagClkPeriod
       )
 
       val uartTx = UartDecoder(
@@ -455,8 +465,9 @@ object ArtyA7SmpLinuxSystemSim {
         uartPin = dut.top.uartA.uart.rxd,
         baudPeriod = uartBaudPeriod
       )
-
-////      val vga = VgaDisplaySim(dut.vga.output, dut.vgaCd.inputClockDomain)
+      println(jtagClkPeriod)
+      println(debugClkPeriod)
+      ////      val vga = VgaDisplaySim(dut.vga.output, dut.vgaCd.inputClockDomain)
 //      val vga = VgaDisplaySim(dut.top.vga.output, clockDomain)
 //
 //      dut.top.eth.mii.RX.DV #= false
