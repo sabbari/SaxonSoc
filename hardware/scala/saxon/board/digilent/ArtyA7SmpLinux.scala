@@ -1,6 +1,6 @@
 package saxon.board.digilent
 
-import mylib.JtagTap_tesic
+import tesic._
 
 import java.awt.image.BufferedImage
 import java.awt.{Color, Dimension, Graphics}
@@ -405,7 +405,7 @@ object ArtyA7SmpLinuxSystemSim {
         val jtag= slave(Jtag()).setName("Tesic")
         val jtagArea = ClockDomain(jtag.tck,debugCd.outputClockDomain.reset)(new Area{
           val myFifo= StreamFifo(UInt(32 bits),5)
-          val tap = new JtagTap_tesic(jtag, 4)
+          val tap = new JtagTapTesic(jtag, 4)
           val idcodeArea = tap.idcode(B"x10005FFF")(1)
           val bypassarea=tap.bypass()(2)
           val h2t=tap.h2t(myFifo.io.push)(3)
