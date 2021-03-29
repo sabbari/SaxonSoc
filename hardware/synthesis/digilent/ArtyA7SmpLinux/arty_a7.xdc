@@ -10,11 +10,11 @@ create_clock -period 10.000 -name clocking_GCLK100 [get_nets clocking_GCLK100]
 set_clock_groups -asynchronous -group clocking_pll_CLKOUT0 -group clocking_pll_CLKOUT1
 
 # JTAG
-set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tms]
-set_property -dict {PACKAGE_PIN D3 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tdi]
-set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tdo]
-set_property -dict {PACKAGE_PIN F3 IOSTANDARD LVCMOS33} [get_ports debug_jtag_tck]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets debug_jtag_tck_IBUF]
+set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports jtag_tms]
+set_property -dict {PACKAGE_PIN D3 IOSTANDARD LVCMOS33} [get_ports jtag_tdi]
+set_property -dict {PACKAGE_PIN F4 IOSTANDARD LVCMOS33} [get_ports jtag_tdo]
+set_property -dict {PACKAGE_PIN F3 IOSTANDARD LVCMOS33} [get_ports jtag_tck]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets jtag_tck_IBUF]
 
 # UART
 set_property -dict {PACKAGE_PIN D10 IOSTANDARD LVCMOS33} [get_ports system_uartA_uart_txd]

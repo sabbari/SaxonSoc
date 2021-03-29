@@ -11,7 +11,7 @@
 extern volatile uint32_t start_of_ramtest[];
 extern  volatile uint32_t length_of_ramtest;
 
-#define MAX_WORDS ((int)&length_of_ramtest)// >> 2)
+#define MAX_WORDS ((int)&length_of_ramtest)>> 2
 #define mem start_of_ramtest
 
 
@@ -32,7 +32,7 @@ void main() {
     println("Memory test\n");
 //setting led to red
     //gpio_setOutput(BSP_LED_GPIO,1<<23);
-
+    print_uint_as_hex(&mem,8);
 
 
    for(int i=0;i<MAX_WORDS;i++) {
