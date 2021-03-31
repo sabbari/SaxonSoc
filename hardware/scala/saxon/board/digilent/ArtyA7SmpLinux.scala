@@ -1,5 +1,6 @@
 package saxon.board.digilent
 
+import saxon._
 import tesic._
 
 import java.awt.image.BufferedImage
@@ -7,7 +8,6 @@ import java.awt.{Color, Dimension, Graphics}
 import java.io.{ByteArrayOutputStream, FileInputStream, FileOutputStream}
 import javax.swing.{JFrame, JPanel, WindowConstants}
 import saxon.common.I2cModel
-import saxon._
 import spinal.core._
 import spinal.core.fiber._
 import spinal.core.sim._
@@ -32,7 +32,7 @@ import spinal.lib.memory.sdram.sdr._
 import spinal.lib.memory.sdram.xdr.CoreParameter
 import spinal.lib.memory.sdram.xdr.phy.XilinxS7Phy
 import spinal.lib.misc.analog.{BmbBsbToDeltaSigmaGenerator, BsbToDeltaSigmaParameter}
-import spinal.lib.{StreamFifo, slave}
+import spinal.lib.{StreamFifo, StreamFifoCC, slave}
 import spinal.lib.system.dma.sg.{DmaMemoryLayout, DmaSgGenerator}
 import vexriscv.demo.smp.VexRiscvSmpClusterGen
 import vexriscv.ip.fpu.{FpuCore, FpuParameter}
@@ -57,21 +57,19 @@ class ArtyA7SmpLinuxAbstract(cpuCount: Int) extends VexRiscvClusterGenerator(cpu
   }
 
 
-  val myApbBmb = BmbToApb3Generator(SizeMapping(0x50000, BigInt(1) << log2Up(8)))
-  myApbBmb.apb3Config.load(Apb3Config(
-    addressWidth = 4,
-    dataWidth = 32
-  ))
-  val apbArea = Handle(new Area {
-      val myreg = Reg(UInt(32 bit)).init(U"xFFF0F0F0")
-      val myreg1 = Reg(UInt(32 bit)).init(U"x0F0F0FFF")
-      val busCtrl = Apb3SlaveFactory(myApbBmb.output)
-      busCtrl.read(myreg, address = 0)
-      busCtrl.write(myreg1, address = 4)
+//    val myApbBmb = BmbToApb3Generator(SizeMapping(0x50000, BigInt(1) << 16))
+//    myApbBmb.apb3Config.load(Apb3Config(
+//      addressWidth = 16,
+//      dataWidth = 32
+//    ))
+//  val busCtrlArea = Handle ( new Area {val busCtrl = Apb3SlaveFactory(myApbBmb.output)})
 
-  })
-
-
+  def withSSTAP(debugCd : Handle[ClockDomain], systemCd : ClockDomainResetGenerator) = new Area{
+    val ctrl = debugCd on BmbBridgeGenerator()
+    interconnect.addConnection(bmbPeripheral.bmb, ctrl.bmb)
+    val tap = debugCd on SSTAPGenerator()
+    interconnect.addConnection(ctrl.bmb, tap.apbBridge.input)
+  }
 
   val ramA = BmbOnChipRamGenerator(0xA00000l)
   ramA.hexOffset = bmbPeripheral.mapping.lowerBound
@@ -118,7 +116,6 @@ class ArtyA7SmpLinux(cpuCount: Int) extends Component {
   debugCd.enablePowerOnReset()
 
 
-
   val resetCd = ClockDomainResetGenerator()
   resetCd.holdDuration.load(63)
   resetCd.asyncReset(debugCd)
@@ -134,10 +131,12 @@ class ArtyA7SmpLinux(cpuCount: Int) extends Component {
   // ...
   val system = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount) {
 
-  }
 
+  }
+ // system.reset.load(systemCd.outputClockDomain.reset)
   // Enable native JTAG debug
   val debug = system.withDebugBus(debugCd, systemCd, 0x10B80000).withBscane2(userId = 2)
+  val jtagssTap = system.withSSTAP(debugCd.outputClockDomain, debugCd)
   //val debug = system.withDebugBus(debugCd, systemCd, 0x10B80000).withJtag()
   // TESIC JTAG
 
@@ -212,15 +211,56 @@ class ArtyA7SmpLinux(cpuCount: Int) extends Component {
   val startupe2 = system.spiA.flash.produce(
     STARTUPE2.driveSpiClk(system.spiA.flash.sclk.setAsDirectionLess())
   )
-  val jtag = slave(Jtag())
-  val jtagArea = ClockDomain(jtag.tck, systemCd.outputClockDomain.reset)(new Area {
-    val myFifo = StreamFifo(UInt(32 bits), 5)
-    val tap = new JtagTapTesic(jtag, 4)
-    val idcodeArea = tap.idcode(B"x10005FFF")(1)
-    val bypassarea = tap.bypass()(2)
-    val h2t = tap.h2t(myFifo.io.push)(3)
-    val t2h = tap.t2h(myFifo.io.pop)(4)
-  })
+
+//  val data = Handle (new Area {
+//    val t2hfifo = new StreamFifo(UInt(32 bits), 4)//, myJtagArea.jtag.tck, systemCd.outputClockDomain.clock)
+//    val h2tfifo = new StreamFifo(UInt(32 bits), 4)//, systemCd.outputClockDomain.clock, myJtagArea.jtag.tck)
+//  })
+//
+//  val apbArea = Handle (ClockDomain(systemCd.outputClockDomain.clock,systemCd.outputClockDomain.reset)(new Area {
+//    val pushvalid = Reg(Bool).init(False)
+//    val status = Reg(Bits(16 bit))
+//
+//    data.t2hfifo.io.push.valid := False
+//    data.h2tfifo.io.pop.ready := False
+//    when(pushvalid) {
+//      data.t2hfifo.io.push.valid := True
+//      pushvalid := False
+//    }
+//
+//    status := ((data.t2hfifo.io.occupancy.asBits.resize(4 bits))) ## (data.h2tfifo.io.occupancy.asBits.resize(4 bits) ## B"00000000") //.resize(16 bits)
+//
+//
+//
+//    system.busCtrlArea.busCtrl.read(status, address = 0x10)
+//    system.busCtrlArea.busCtrl.read(data.h2tfifo.io.pop.payload, address = 0x18)
+//    system.busCtrlArea.busCtrl.drive(data.t2hfifo.io.push.payload, 0x1c)
+//    system.busCtrlArea.busCtrl.onWrite(0x1c)(
+//      {
+//        pushvalid := True
+//      }
+//    )
+//    system.busCtrlArea.busCtrl.onRead(address = 0x18)({
+//      when(data.h2tfifo.io.occupancy > 0) {
+//        data.h2tfifo.io.pop.ready := True
+//      }
+//    })
+
+//  }))
+//
+//  val myJtagArea = Handle(new Area {
+//    val jtag = slave(Jtag())
+//
+//    val jtagArea = ClockDomain(jtag.tck,systemCd.outputClockDomain.reset)(new Area {
+//      //val myFifo = StreamFifo(UInt(32 bits), 5)
+//      val tap = new JtagTapTesic(jtag, 4)
+//      val idcodeArea = tap.idcode(B"x10005FFF")(1)
+//      val bypassarea = tap.bypass()(2)
+//      val h2t = tap.h2t(data.h2tfifo.io.push)(3)
+//      val t2h = tap.t2h(data.t2hfifo.io.pop)(4)
+//    })
+//  })
+//
 
 
 }
@@ -291,19 +331,6 @@ object ArtyA7SmpLinuxAbstract {
     interconnect.setPipelining(fabric.iBus.bmb)(cmdValid = true)
     //interconnect.setPipelining(dma.read)(cmdHalfRate = true)
 
-    //    val myReg=Reg(UInt(32 bit))
-    //    val myapb= slave(Apb3(Apb3Config(
-    //      addressWidth = 1,
-    //      dataWidth    = 32
-    //       )))
-    //        val busCtrl = Apb3SlaveFactory(myapb)
-    //        busCtrl.driveAndRead(myReg,address = 0)
-    //
-    //    val myApbBmb = BmbToApb3Generator(SingleMapping(0x30000))(interconnect)
-    //     bmbPeripheral.bmb<> myApbBmb.input
-    ////   interconnect.addConnection(
-    ////    bmbPeripheral.bmb           -> List(myApbBmb.input)  )
-    //       myApbBmb.output <> myapb
   }
 }
 
@@ -409,7 +436,7 @@ object ArtyA7SmpLinuxSystemSim {
     // simConfig.withFstWave
     simConfig.addSimulatorFlag("-Wno-MULTIDRIVEN -Wno-LATCH")
 
-    simConfig.compile(new Component {
+    simConfig.withWave.compile(new Component {
       val debugCd = ClockDomainResetGenerator()
       debugCd.enablePowerOnReset()
       debugCd.holdDuration.load(63)
@@ -422,33 +449,36 @@ object ArtyA7SmpLinuxSystemSim {
       systemCd.setInput(debugCd)
 
 
-      val top = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount = 2) {
-
-        //      val vgaCd = ClockDomainResetGenerator()
-        //      vgaCd.holdDuration.load(63)
-        //      vgaCd.makeExternal(withResetPin = false)
-        //      vgaCd.asyncReset(debugCd)
-        //
-        //      vga.vgaCd.merge(vgaCd.outputClockDomain)
+      val top = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount = 1) {
 
 
-        val jtag = slave(Jtag()).setName("Tesic")
-        val jtagArea = ClockDomain(jtag.tck, debugCd.outputClockDomain.reset)(new Area {
-          val myFifo = StreamFifo(UInt(32 bits), 5)
-          val tap = new JtagTapTesic(jtag, 4)
-          val idcodeArea = tap.idcode(B"x10005FFF")(1)
-          val bypassarea = tap.bypass()(2)
-          val h2t = tap.h2t(myFifo.io.push)(3)
-          val t2h = tap.t2h(myFifo.io.pop)(4)
-        })
+
+//        val myJtagArea = Handle(new Area {
+//          val jtag = slave(Jtag())
+//
+//          val jtagArea = ClockDomain(jtag.tck, systemCd.outputClockDomain.reset)(new Area {
+//            val t2hfifo = StreamFifo(UInt(32 bits), 4)
+//            val tap = new JtagTapTesic(jtag, 4)
+//            val idcodeArea = tap.idcode(B"x10005FFF")(1)
+//            val bypassarea = tap.bypass()(2)
+//            val h2t = tap.h2t(t2hfifo.io.push)(3)
+//            val t2h = tap.t2h(t2hfifo.io.pop)(4)
+//          })
+//        })
+
         val jtagTap = withDebugBus(debugCd, systemCd, address = 0x10B80000).withJtag()
+        val jtagssTap = withSSTAP(debugCd.outputClockDomain, debugCd)
         //        withoutDebug
 
-
+//        val data = ClockDomain(myJtagArea.jtag.tck, systemCd.outputClockDomain.reset)(new Area {
+//
+//        })
         ArtyA7SmpLinuxAbstract.default(this)
-        ramA.hexInit.load("software/standalone/memoryTest/build/memoryTest.hex") //_spinal_sim.hex")
+
+
+        ramA.hexInit.load("software/standalone/ApbJtag/build/ApbJtag.hex") //_spinal_sim.hex")
       }
-    }.setDefinitionName("miaou2")).doSimUntilVoid("test", 42) { dut =>
+    }.setDefinitionName("miaou2")).doSimUntilVoid("test", 142) { dut =>
       val debugClkPeriod = (1e12 / dut.debugCd.inputClockDomain.frequency.getValue.toDouble).toLong
       val jtagClkPeriod = debugClkPeriod * 4
       val uartBaudRate = 115200
@@ -482,10 +512,14 @@ object ArtyA7SmpLinuxSystemSim {
 
       val tcpJtag = JtagTcp(
         jtag = dut.top.jtagTap.jtag,
-        //jtag = dut.top.jtag,
+        //jtag = dut.top.myJtagArea.jtag,
         jtagClkPeriod = jtagClkPeriod
       )
-
+      val tcpJtag2 = JtagTcp(
+        jtag = dut.top.jtagssTap.tap.jtagArea.jtag,
+        jtagClkPeriod = jtagClkPeriod,
+        port =7895
+      )
       val uartTx = UartDecoder(
         uartPin = dut.top.uartA.uart.txd,
         baudPeriod = uartBaudPeriod
