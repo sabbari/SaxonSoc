@@ -1,5 +1,5 @@
 #!/bin/sh
-export SAXON_CPU_COUNT=2
+export SAXON_CPU_COUNT=1
 
 # Locations
 SAXON_SOURCED_SH=$(realpath ${BASH_SOURCE})

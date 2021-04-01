@@ -41,6 +41,18 @@ import vexriscv.plugin.{AesPlugin, FpuPlugin}
 
 // Define a SoC abstract enough to be used in simulation (no PLL, no PHY)
 class ArtyA7SmpLinuxAbstract(cpuCount: Int) extends VexRiscvClusterGenerator(cpuCount) {
+
+
+  def withSSTAP(debugCd : Handle[ClockDomain], systemCd : ClockDomainResetGenerator) = new Area{
+    val addressWidth = log2Up(64)
+    val adress       = 0x50000
+    val ctrl = debugCd on BmbBridgeGenerator()
+    interconnect.addConnection(bmbPeripheral.bmb, ctrl.bmb)
+    val tap = debugCd on SSTAPGenerator(adress,addressWidth)
+    interconnect.addConnection(ctrl.bmb, tap.apbBridge.input)
+  }
+
+
   val fabric = withDefaultFabric()
 
   val gpioA = BmbGpioGenerator(0x00000)
@@ -57,19 +69,7 @@ class ArtyA7SmpLinuxAbstract(cpuCount: Int) extends VexRiscvClusterGenerator(cpu
   }
 
 
-//    val myApbBmb = BmbToApb3Generator(SizeMapping(0x50000, BigInt(1) << 16))
-//    myApbBmb.apb3Config.load(Apb3Config(
-//      addressWidth = 16,
-//      dataWidth = 32
-//    ))
-//  val busCtrlArea = Handle ( new Area {val busCtrl = Apb3SlaveFactory(myApbBmb.output)})
 
-  def withSSTAP(debugCd : Handle[ClockDomain], systemCd : ClockDomainResetGenerator) = new Area{
-    val ctrl = debugCd on BmbBridgeGenerator()
-    interconnect.addConnection(bmbPeripheral.bmb, ctrl.bmb)
-    val tap = debugCd on SSTAPGenerator()
-    interconnect.addConnection(ctrl.bmb, tap.apbBridge.input)
-  }
 
   val ramA = BmbOnChipRamGenerator(0xA00000l)
   ramA.hexOffset = bmbPeripheral.mapping.lowerBound
@@ -77,8 +77,8 @@ class ArtyA7SmpLinuxAbstract(cpuCount: Int) extends VexRiscvClusterGenerator(cpu
   interconnect.addConnection(bmbPeripheral.bmb, ramA.ctrl)
 
   interconnect.addConnection(
-    fabric.iBus.bmb -> List(/*sdramA0.bmb, */ bmbPeripheral.bmb),
-    fabric.dBus.bmb -> List(/*sdramA0.bmb,*/ bmbPeripheral.bmb)
+    fabric.iBus.bmb -> List( bmbPeripheral.bmb),
+    fabric.dBus.bmb -> List( bmbPeripheral.bmb)
   )
 
 
@@ -133,7 +133,7 @@ class ArtyA7SmpLinux(cpuCount: Int) extends Component {
 
 
   }
- // system.reset.load(systemCd.outputClockDomain.reset)
+
   // Enable native JTAG debug
   val debug = system.withDebugBus(debugCd, systemCd, 0x10B80000).withBscane2(userId = 2)
   val jtagssTap = system.withSSTAP(debugCd.outputClockDomain, debugCd)
@@ -199,69 +199,12 @@ class ArtyA7SmpLinux(cpuCount: Int) extends Component {
         frequency = FixedFrequency(150 MHz)
       )
     )
-    //vgaCd.setInput(ClockDomain(clk25))
-    // system.vga.vgaCd.load(vgaCd.outputClockDomain)
-
-    //    sdramDomain.phyA.clk90.load(ClockDomain(pll.CLKOUT2))
-    //    sdramDomain.phyA.serdesClk0.load(ClockDomain(pll.CLKOUT3))
-    //    sdramDomain.phyA.serdesClk90.load(ClockDomain(pll.CLKOUT4))
   }
 
   // Allow to access the native SPI flash clock pin
   val startupe2 = system.spiA.flash.produce(
     STARTUPE2.driveSpiClk(system.spiA.flash.sclk.setAsDirectionLess())
   )
-
-//  val data = Handle (new Area {
-//    val t2hfifo = new StreamFifo(UInt(32 bits), 4)//, myJtagArea.jtag.tck, systemCd.outputClockDomain.clock)
-//    val h2tfifo = new StreamFifo(UInt(32 bits), 4)//, systemCd.outputClockDomain.clock, myJtagArea.jtag.tck)
-//  })
-//
-//  val apbArea = Handle (ClockDomain(systemCd.outputClockDomain.clock,systemCd.outputClockDomain.reset)(new Area {
-//    val pushvalid = Reg(Bool).init(False)
-//    val status = Reg(Bits(16 bit))
-//
-//    data.t2hfifo.io.push.valid := False
-//    data.h2tfifo.io.pop.ready := False
-//    when(pushvalid) {
-//      data.t2hfifo.io.push.valid := True
-//      pushvalid := False
-//    }
-//
-//    status := ((data.t2hfifo.io.occupancy.asBits.resize(4 bits))) ## (data.h2tfifo.io.occupancy.asBits.resize(4 bits) ## B"00000000") //.resize(16 bits)
-//
-//
-//
-//    system.busCtrlArea.busCtrl.read(status, address = 0x10)
-//    system.busCtrlArea.busCtrl.read(data.h2tfifo.io.pop.payload, address = 0x18)
-//    system.busCtrlArea.busCtrl.drive(data.t2hfifo.io.push.payload, 0x1c)
-//    system.busCtrlArea.busCtrl.onWrite(0x1c)(
-//      {
-//        pushvalid := True
-//      }
-//    )
-//    system.busCtrlArea.busCtrl.onRead(address = 0x18)({
-//      when(data.h2tfifo.io.occupancy > 0) {
-//        data.h2tfifo.io.pop.ready := True
-//      }
-//    })
-
-//  }))
-//
-//  val myJtagArea = Handle(new Area {
-//    val jtag = slave(Jtag())
-//
-//    val jtagArea = ClockDomain(jtag.tck,systemCd.outputClockDomain.reset)(new Area {
-//      //val myFifo = StreamFifo(UInt(32 bits), 5)
-//      val tap = new JtagTapTesic(jtag, 4)
-//      val idcodeArea = tap.idcode(B"x10005FFF")(1)
-//      val bypassarea = tap.bypass()(2)
-//      val h2t = tap.h2t(data.h2tfifo.io.push)(3)
-//      val t2h = tap.t2h(data.t2hfifo.io.pop)(4)
-//    })
-//  })
-//
-
 
 }
 
@@ -327,9 +270,7 @@ object ArtyA7SmpLinuxAbstract {
     interconnect.setPipelining(fabric.invalidationMonitor.output)(cmdValid = true, cmdReady = true, rspValid = true)
     interconnect.setPipelining(fabric.dBus.bmb)(cmdValid = true, cmdReady = true)
     interconnect.setPipelining(bmbPeripheral.bmb)(cmdHalfRate = true, rspHalfRate = true)
-    // interconnect.setPipelining(sdramA0.bmb)(cmdValid = true, cmdReady = true, rspValid = true)
     interconnect.setPipelining(fabric.iBus.bmb)(cmdValid = true)
-    //interconnect.setPipelining(dma.read)(cmdHalfRate = true)
 
   }
 }
@@ -452,27 +393,8 @@ object ArtyA7SmpLinuxSystemSim {
       val top = systemCd.outputClockDomain on new ArtyA7SmpLinuxAbstract(cpuCount = 1) {
 
 
-
-//        val myJtagArea = Handle(new Area {
-//          val jtag = slave(Jtag())
-//
-//          val jtagArea = ClockDomain(jtag.tck, systemCd.outputClockDomain.reset)(new Area {
-//            val t2hfifo = StreamFifo(UInt(32 bits), 4)
-//            val tap = new JtagTapTesic(jtag, 4)
-//            val idcodeArea = tap.idcode(B"x10005FFF")(1)
-//            val bypassarea = tap.bypass()(2)
-//            val h2t = tap.h2t(t2hfifo.io.push)(3)
-//            val t2h = tap.t2h(t2hfifo.io.pop)(4)
-//          })
-//        })
-
         val jtagTap = withDebugBus(debugCd, systemCd, address = 0x10B80000).withJtag()
         val jtagssTap = withSSTAP(debugCd.outputClockDomain, debugCd)
-        //        withoutDebug
-
-//        val data = ClockDomain(myJtagArea.jtag.tck, systemCd.outputClockDomain.reset)(new Area {
-//
-//        })
         ArtyA7SmpLinuxAbstract.default(this)
 
 
@@ -486,9 +408,6 @@ object ArtyA7SmpLinuxSystemSim {
 
       val clockDomain = dut.debugCd.inputClockDomain.get
       clockDomain.forkStimulus(debugClkPeriod)
-
-      //      dut.vgaCd.inputClockDomain.get.forkStimulus(40000)
-      //      clockDomain.forkSimSpeedPrinter(2.0)
 
       fork {
         val at = 0
@@ -531,115 +450,8 @@ object ArtyA7SmpLinuxSystemSim {
       )
       println(jtagClkPeriod)
       println(debugClkPeriod)
-      ////      val vga = VgaDisplaySim(dut.vga.output, dut.vgaCd.inputClockDomain)
-      //      val vga = VgaDisplaySim(dut.top.vga.output, clockDomain)
-      //
-      //      dut.top.eth.mii.RX.DV #= false
-      //      dut.top.eth.mii.RX.ER #= false
-      //      dut.top.eth.mii.RX.CRS #= false
-      //      dut.top.eth.mii.RX.COL #= false
-      //      dut.top.spiA.sdcard.data.read #= 3
-
-      //      val memoryTraceFile = new FileOutputStream("memoryTrace")
-      //      clockDomain.onSamplings{
-      //        val cmd = dut.sdramA0.bmb.cmd
-      //        if(cmd.valid.toBoolean){
-      //          val address = cmd.address.toLong
-      //          val opcode = cmd.opcode.toInt
-      //          val source = cmd.source.toInt
-      //          val bytes = Array[Byte](opcode.toByte, source.toByte, (address >> 0).toByte, (address >> 8).toByte, (address >> 16).toByte, (address >> 24).toByte)
-      //          memoryTraceFile.write(bytes)
-      //        }
-      //      }
-
-      //      val images = "../buildroot-build/images/"
-      //
-      //      dut.top.phy.logic.loadBin(0x00F80000, images + "fw_jump.bin")
-      //      dut.top.phy.logic.loadBin(0x00F00000, images + "u-boot.bin")
-      //      dut.phy.logic.loadBin(0x00000000, images + "Image")
-      //      dut.phy.logic.loadBin(0x00FF0000, images + "linux.dtb")
-      //      dut.phy.logic.loadBin(0x00FFFFC0, images + "rootfs.cpio.uboot")
-      //
-      //      //Bypass uboot
-      //      dut.phy.logic.loadBytes(0x00F00000, Seq(0xb7, 0x0f, 0x00, 0x80, 0xe7, 0x80, 0x0f,0x00).map(_.toByte))  //Seq(0x80000fb7, 0x000f80e7)
-
-
-      //        dut.top.phy.logic.loadBin(0x00F80000, "software/standalone/fpu/build/fpu.bin")
-      //      dut.phy.logic.loadBin(0x00F80000, "software/standalone/audioOut/build/audioOut.bin")
-      //dut.phy.logic.loadBin(0x00F80000, "software/standalone/dhrystone/build/dhrystone.bin")
-      //      dut.phy.logic.loadBin(0x00F80000, "software/standalone/timerAndGpioInterruptDemo/build/timerAndGpioInterruptDemo_spinal_sim.bin")
-      //      dut.phy.logic.loadBin(0x00F80000, "software/standalone/freertosDemo/build/freertosDemo_spinal_sim.bin")
-      //println("DRAM loading done")
     }
   }
 }
 
 
-//object MemoryTraceAnalyse extends App{
-//  val stream = new FileInputStream("memoryTrace")
-//  val data = stream.readAllBytes()
-//  val size = data.size
-//  println(s"Size : ${size}")
-//
-//  for( cacheBytes <- List(32 KiB, 64 KiB, 128 KiB, 256 KiB).map(_.toInt);
-//       wayCount <- List(1, 2, 4, 8);
-//       bytePerLine <- List(64)) {
-//    val wayBytes = cacheBytes / wayCount
-//    val linesPerWay = wayBytes / bytePerLine
-//    val lineAddressShift = log2Up(bytePerLine)
-//    val lineAddressMask = linesPerWay - 1
-//    val tagMask = -wayBytes
-//
-//    var wayAllocator = 0
-//    val ways = for (wayId <- 0 until wayCount) yield new {
-//      val lines = for (lineId <- 0 until linesPerWay) yield new {
-//        var address = 0
-//        var valid = false
-//        var age = 0
-//
-//        def hit(target: Int) = valid && (target & tagMask) == address
-//      }
-//    }
-//
-//
-//    var writeThrough = true
-//    var readHits = 0
-//    var readMiss = 0
-//    var writeHits = 0
-//    var writeMiss = 0
-//    for (i <- 0 until size by 6) {
-//      val opcode = data(i + 0)
-//      val source = data(i + 1)
-//      val address = (data(i + 2) << 0) | (data(i + 3) << 8) | (data(i + 4) << 16) | (data(i + 5) << 24)
-//      val lineId = (address >> lineAddressShift) & lineAddressMask
-//      val allocate = !writeThrough || opcode == 0
-//      ways.exists(_.lines(lineId).hit(address)) match {
-//        case false => {
-//          if (opcode == 0) readMiss += 1
-//          else writeMiss += 1
-//          if (allocate) {
-//            var line = ways(0).lines(lineId)
-//            for(way <- ways){
-//              val alternative = way.lines(lineId)
-//              if(alternative.age < line.age) line = alternative
-//            }
-//
-//           // val line = ways(wayAllocator).lines(lineId)
-//            line.valid = true
-//            line.address = address & tagMask
-//            line.age = i
-//
-//            wayAllocator += 1
-//            wayAllocator %= wayCount
-//          }
-//        }
-//        case true => {
-//          if (opcode == 0) readHits += 1
-//          else if(!writeThrough) writeHits += 1
-//        }
-//      }
-//    }
-//    println(f"cacheBytes=${cacheBytes/1024} KB wayCount=$wayCount bytePerLine=${bytePerLine} => readMissRate=${readMiss.toFloat/(readMiss+readHits)}%1.3f writeMissRate=${writeMiss.toFloat/(writeMiss+writeHits)}%1.3f readMiss=$readMiss writeMiss=$writeMiss")
-//  }
-//
-//}
